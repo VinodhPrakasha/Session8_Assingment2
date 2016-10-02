@@ -1,0 +1,70 @@
+*******LOAD***********
+dataload = load '/inputfiles/sample' using PigStorage(',') as (id:int,fname:chararray,lname:chararray,age:int,sal:int,year:int,exp:int,grade:chararray)
+
+*******CONCAT*********************
+
+concatname = foreach dataload generate CONCAT(fname,lname) AS FULLname,age,sal,year,exp,grade;
+
+store  concatname into '/output/concate';
+
+***********Tokenize*****************
+
+recload  = load '/inputfiles/samplerec' as (fullrec:chararray);
+
+tokenizerec = foreach recload generate TOKENIZE(onerecord) as word;
+
+store  tokenizerec into '/output/tokenizerec';
+
+***********SUM**********************************
+
+groupall = group dataload all;
+
+sumsal = foreach groupall generate SUM(dataload.sal);
+
+store sumsal into '/output/sumsal';
+
+**************MIN********************************
+
+minsal = foreach groupall generate group,MIN(dataload.sal);
+
+dump minsal;
+
+************MAX*************************************
+
+maxsal = foreach groupall generate group,MAX(dataload.sal);
+
+dump maxsal;
+
+***************LIMIT*************************************
+
+lim = LIMIT  dataload 3;
+
+dump lim;
+
+***************STORE******************************
+
+store lim into '/output/salstore';
+
+*********************DISTINCT*******************
+
+dissel = foreach dataload generate id,fname,age;
+
+dist = DISTINCT dissel;
+
+*********************FLATTEN*********************
+
+grp = GROUP dataload BY id;
+
+flt = FORECAH grp GENERATE FLATTEN(group);
+
+*************************ISEMPTY***********************
+
+isemp = FILTER dataload by IsEmpty(fname);
+
+dump isemp;
+
+
+--ans no records returned as there are no empty fname in my dataset
+
+****************************************************
+
